@@ -313,7 +313,8 @@ class DataSeriesValues
         if ($count == 0) {
             return null;
         } elseif ($count == 1) {
-            return $this->dataValues[0];
+            return array_values($this->dataValues)[0];
+            // return $this->dataValues[0];
         }
 
         return $this->dataValues;
