@@ -59,16 +59,20 @@ class Chart
     public static function readChart(SimpleXMLElement $chartElements, $chartName)
     {
         $namespacesChartMeta = $chartElements->getNamespaces(true);
+        // print_r($namespacesChartMeta);
         $chartElementsC = $chartElements->children($namespacesChartMeta['c']);
 
         $XaxisLabel = $YaxisLabel = $legend = $title = null;
         $dispBlanksAs = $plotVisOnly = null;
 
         foreach ($chartElementsC as $chartElementKey => $chartElement) {
+            // echo $chartElementKey."\n";
             switch ($chartElementKey) {
                 case 'chart':
                     foreach ($chartElement as $chartDetailsKey => $chartDetails) {
                         $chartDetailsC = $chartDetails->children($namespacesChartMeta['c']);
+                        // echo $chartDetailsC."\n";
+                        // echo $chartDetailsKey."=\n";
                         switch ($chartDetailsKey) {
                             case 'plotArea':
                                 $plotAreaLayout = $XaxisLable = $YaxisLable = null;
@@ -184,7 +188,9 @@ class Chart
 
                                 break;
                             case 'title':
-                                $title = self::chartTitle($chartDetails, $namespacesChartMeta);
+                                // print_r($chartDetails);
+                                // print_r($namespacesChartMeta);
+                                $title = self::chartTitle($chartDetails, $namespacesChartMeta, $chartElements);
 
                                 break;
                             case 'legend':
@@ -219,11 +225,13 @@ class Chart
         return $chart;
     }
 
-    private static function chartTitle(SimpleXMLElement $titleDetails, array $namespacesChartMeta)
+    private static function chartTitle(SimpleXMLElement $titleDetails, array $namespacesChartMeta, SimpleXMLElement $chartElements=null)
     {
         $caption = [];
         $titleLayout = null;
         foreach ($titleDetails as $titleDetailKey => $chartDetail) {
+            // print_r($titleDetailKey);
+            // print_r($chartDetail);
             switch ($titleDetailKey) {
                 case 'tx':
                     $titleDetails = $chartDetail->rich->children($namespacesChartMeta['a']);
@@ -238,7 +246,85 @@ class Chart
                     break;
                 case 'layout':
                     $titleLayout = self::chartLayoutDetails($chartDetail, $namespacesChartMeta);
+                    break;
+                case 'overlay':
+                    // $titleDetails = $chartDetail->rich->children($namespacesChartMeta['a']);
+                    if ($chartElements == null) {
+                        break;
+                    }
+                    $chartElements->children($namespacesChartMeta['c']);    
+                    $titleDetails = $chartElements->children($namespacesChartMeta['c']);
+                    $val = -1;
+                    foreach($chartDetail->attributes() as $a => $b) {
+                        if ($a == 'val') {
+                            $val = (int)$b;
+                        }
+                    }
 
+                    $title = '';
+
+                    if ($val != -1 && $chartElements != null) {
+
+                        $chartElementsC = $chartElements->children($namespacesChartMeta['c']);
+
+                        // print_r($chartElementsC->chart);
+                        // print_r($chartElementsC->chart->autoTitleDeleted);
+                        // print_r($chartElementsC->chart->plotArea);
+                        $protArea = (array)$chartElementsC->chart->plotArea;
+                        // print_r($protArea);
+
+                        foreach($protArea as $charttype => $d) {
+                            
+                            switch ($charttype) {
+                                case 'barChart':
+                                case 'bar3DChart':
+                                case 'lineChart':
+                                case 'line3DChart':
+                                case 'areaChart':
+                                case 'area3DChart':
+                                case 'doughnutChart':
+                                case 'pieChart':
+                                case 'pie3DChart':
+                                case 'scatterChart':
+                                case 'bubbleChart':
+                                case 'radarChart':
+                                case 'surfaceChart':
+                                case 'surface3DChart':
+                                case 'stockChart':
+
+                                // $caption[] = @$d->ser->tx->strRef->strCache->pt->v;
+                                // $caption[] = @$d->ser->tx->strRef->strCache->pt->v;
+
+
+                                    $value = new RichText();
+                                    $objText = $value->createTextRun((string)@$d->ser->tx->strRef->strCache->pt->v);
+                                    // print_r($objText );
+                                    if (empty($caption)) {
+                                        $caption[] = $value;
+                                    }
+
+                                    // echo __LINE__;
+                                    // @$title = @(string)@$d->ser->tx->strRef->strCache->pt->v;
+                                    break;
+                            }
+                        }
+
+                        // foreach ($chartElementsC as $chartElementKey => $chartElement) {
+                        //     if ($chartElementKey == 'chart') {
+                        //         $chartElementsCC = $chartElement->children($namespacesChartMeta['c']);
+                        //         print_r($chartElementsCC->plotArea);
+
+                        //         foreach ($chartElementsCC as $chartElementKeyy => $chartElementt) {
+                        //             echo $chartElementKeyy."\n";
+                        //         }
+                        //     }
+                        // }
+                        
+                    }
+
+                    // $val = $chartDetail->attributes('val');
+                    // // print_r($namespacesChartMeta);
+                    // print_r($titleDetails);
                     break;
             }
         }
@@ -340,6 +426,9 @@ class Chart
         } elseif (isset($seriesDetail->multiLvlStrRef)) {
             $seriesSource = (string) $seriesDetail->multiLvlStrRef->f;
             $seriesData = self::chartDataSeriesValuesMultiLevel($seriesDetail->multiLvlStrRef->multiLvlStrCache->children($namespacesChartMeta['c']), 's');
+            if ($seriesData == null) {
+                return null;
+            }
             $seriesData['pointCount'] = count($seriesData['dataValues']);
 
             return new DataSeriesValues(DataSeriesValues::DATASERIES_TYPE_STRING, $seriesSource, $seriesData['formatCode'], $seriesData['pointCount'], $seriesData['dataValues'], $marker);
@@ -397,6 +486,10 @@ class Chart
         $formatCode = '';
         $pointCount = 0;
 
+        if (!is_array($seriesValueSet)) {
+            return false;
+        }
+        
         foreach ($seriesValueSet->lvl as $seriesLevelIdx => $seriesLevel) {
             foreach ($seriesLevel as $seriesValueIdx => $seriesValue) {
                 switch ($seriesValueIdx) {
