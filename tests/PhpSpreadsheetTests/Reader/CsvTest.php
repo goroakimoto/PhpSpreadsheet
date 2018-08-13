@@ -83,10 +83,27 @@ class CsvTest extends TestCase
             [false, 'data/Reader/Xml/WithoutStyle.xml'],
             [true, 'data/Reader/CSV/enclosure.csv'],
             [true, 'data/Reader/CSV/semicolon_separated.csv'],
+            [true, 'data/Reader/CSV/contains_html.csv'],
+            [true, 'data/Reader/CSV/csv_without_extension'],
             [true, 'data/Reader/HTML/csv_with_angle_bracket.csv'],
             [true, 'data/Reader/CSV/empty.csv'],
             [true, '../samples/Reader/sampleData/example1.csv'],
             [true, '../samples/Reader/sampleData/example2.csv'],
         ];
+    }
+
+    public function testEscapeCharacters()
+    {
+        $reader = (new Csv())->setEscapeCharacter('"');
+        $worksheet = $reader->load(__DIR__ . '/../../data/Reader/CSV/backslash.csv')
+            ->getActiveSheet();
+
+        $expected = [
+            ['field 1', 'field 2\\'],
+            ['field 3\\', 'field 4'],
+        ];
+
+        $this->assertSame('"', $reader->getEscapeCharacter());
+        $this->assertSame($expected, $worksheet->toArray());
     }
 }
