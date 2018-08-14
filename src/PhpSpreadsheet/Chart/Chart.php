@@ -140,6 +140,7 @@ class Chart
      */
     private $bottomRightYOffset = 10;
 
+    public $chartcamp_axis = null;
     /**
      * Create a new Chart.
      *
@@ -155,9 +156,11 @@ class Chart
      * @param null|Axis $yAxis
      * @param null|GridLines $majorGridlines
      * @param null|GridLines $minorGridlines
+     * @param null|$chartcamp_axis
      */
-    public function __construct($name, Title $title = null, Legend $legend = null, PlotArea $plotArea = null, $plotVisibleOnly = true, $displayBlanksAs = '0', Title $xAxisLabel = null, Title $yAxisLabel = null, Axis $xAxis = null, Axis $yAxis = null, GridLines $majorGridlines = null, GridLines $minorGridlines = null)
+    public function __construct($name, Title $title = null, Legend $legend = null, PlotArea $plotArea = null, $plotVisibleOnly = true, $displayBlanksAs = '0', Title $xAxisLabel = null, Title $yAxisLabel = null, Axis $xAxis = null, Axis $yAxis = null, GridLines $majorGridlines = null, GridLines $minorGridlines = null, $chartcamp_axis)
     {
+        $this->chartcamp_axis = $chartcamp_axis;
         $this->name = $name;
         $this->title = $title;
         $this->legend = $legend;

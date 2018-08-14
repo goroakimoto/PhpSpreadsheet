@@ -64,6 +64,11 @@ class Chart
 
         $XaxisLabel = $YaxisLabel = $legend = $title = null;
         $dispBlanksAs = $plotVisOnly = null;
+        $chartcamp_axis = [
+            'catAxs' => [],
+            'dateAx' => [],
+            'valAx' => [],
+        ];
 
         foreach ($chartElementsC as $chartElementKey => $chartElement) {
             // echo $chartElementKey."\n";
@@ -87,18 +92,21 @@ class Chart
                                             if (isset($chartDetail->title)) {
                                                 $XaxisLabel = self::chartTitle($chartDetail->title->children($namespacesChartMeta['c']), $namespacesChartMeta);
                                             }
+                                            $chartcamp_axis[$chartDetailKey][] = $chartDetail;
 
                                             break;
                                         case 'dateAx':
                                             if (isset($chartDetail->title)) {
                                                 $XaxisLabel = self::chartTitle($chartDetail->title->children($namespacesChartMeta['c']), $namespacesChartMeta);
                                             }
+                                            $chartcamp_axis[$chartDetailKey][] = $chartDetail;
 
                                             break;
                                         case 'valAx':
                                             if (isset($chartDetail->title)) {
                                                 $YaxisLabel = self::chartTitle($chartDetail->title->children($namespacesChartMeta['c']), $namespacesChartMeta);
                                             }
+                                            $chartcamp_axis[$chartDetailKey][] = $chartDetail;
 
                                             break;
                                         case 'barChart':
@@ -220,8 +228,8 @@ class Chart
                     }
             }
         }
-        $chart = new \PhpOffice\PhpSpreadsheet\Chart\Chart($chartName, $title, $legend, $plotArea, $plotVisOnly, $dispBlanksAs, $XaxisLabel, $YaxisLabel);
-
+        $chart = new \PhpOffice\PhpSpreadsheet\Chart\Chart($chartName, $title, $legend, $plotArea, $plotVisOnly, $dispBlanksAs, $XaxisLabel, $YaxisLabel, null, null, null, null, $chartcamp_axis);
+        // print_r($chartcamp_axis);
         return $chart;
     }
 
